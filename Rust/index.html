@@ -63,16 +63,16 @@
 	<h2>Dangling pointers</h2>
 	<pre><code class="c" data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
 int* abc() {
-int *x;
-*x = 1;
-// .....
-return x
+	int *x;
+	*x = 1;
+	// .....
+	return x;
 }
 	</code></pre>
 	</section>
 	<section>
 	<h2>Iterator invalidation</h2>
-	<pre><code class="c" data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+	<pre><code class="c" data-trim style="font-size: 18px; margin-top: 20px;">
 // Create the vector
 vector&ltint> x;
 x.push_back(1);
@@ -84,9 +84,9 @@ vector&lt;int>::iterator itr = x.begin();
 
 int j=0;
 for (itr; itr !=x.end(); itr++) {
-x.push_back(j); // Uh oh!
-j++;
-cout << j << " .. ";
+	x.push_back(j); // Uh oh!
+	j++;
+	cout << j << " .. ";
 }
 	</code></pre>
 	<br>
@@ -104,7 +104,54 @@ cout << j << " .. ";
 	<img src="heartbleed.png">
 	</section>
 	<section>
-		<img src="http://imgs.xkcd.com/comics/compiler_complaint.png">
+		<img src="xkcd-segfault.png">
+	</section>
+</section>
+<section>
+	<img src="rust.png" border=0>
+</section>
+<section>
+	<section>
+		<h1>Rust basics</h1>
+	</section>
+	<section>
+		<h2>If, loops, functions</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+if a > 1 {
+	println!("{:?}", a)
+}
+
+let i = 0; // Can also be `let i: int = 0;`
+loop {
+	if i > 10 { break; }
+	i+=1;
+	println!("{:?}", i)
+}
+
+fn multiply(x: int, y: int) -> int {
+	return x*y // The return statement is unnecessary
+}
+
+	</code></pre>
+	</section>
+	<section>
+		<h2>Control flow</h2>
+	<p>Semicolons have meaning!</p>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let a = if b > 1 {
+	let c = b - 5;
+	c = c * b; // Removing these two semicolons cause errors
+	c // This "returns" the value of c, due to the lack of semicolon
+}
+
+function greater(a: int, b: int) -> int {
+	if a > b {
+		  a
+	} else {
+		  b
+	}
+}
+	</code></pre>
 	</section>
 </section>
 			</div>
