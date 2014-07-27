@@ -121,7 +121,7 @@ if a > 1 {
 	println!("{:?}", a)
 }
 
-let i = 0; // Can also be `let i: int = 0;`
+let mut i = 0; // Can also be `let mut i: int = 0;`
 loop {
 	if i > 10 { break; }
 	i+=1;
@@ -129,7 +129,7 @@ loop {
 }
 
 fn multiply(x: int, y: int) -> int {
-	return x*y // The return statement is unnecessary
+	return x*y // The return statement is unnecessary, this will be explained later
 }
 
 	</code></pre>
@@ -139,12 +139,12 @@ fn multiply(x: int, y: int) -> int {
 	<p>Semicolons have meaning!</p>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 let a = if b > 1 {
-	let c = b - 5;
+	let mut c = b - 5;
 	c = c * b; // Removing these two semicolons cause errors
 	c // This "returns" the value of c, due to the lack of semicolon
 }
 
-function greater(a: int, b: int) -> int {
+fn greater(a: int, b: int) -> int {
 	if a > b {
 		  a
 	} else {
@@ -153,7 +153,54 @@ function greater(a: int, b: int) -> int {
 }
 	</code></pre>
 	</section>
+	<section>
+		<h2>Matching</h2>
+	<p>Switch-case just got a makeover</p>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let number = 5u;
+let size = match number {
+	0 => "none",
+	2 | 3 => "tiny",
+	4..7 => "small",
+	8..20 => "medium",
+	_ => "large"
+};
+// Multiple statements in a match work!
+match number {
+	2 | 8 | 9 => {
+	  let mut c = 1;
+	  c += number;
+	  println!("The incremented number is {:s}", c)
+	},
+	_ => println!("We don't have the ability to increment this number, sorry")
+}
+	</code></pre>
+	</section>
+	<section>
+		<h2>Destructuring</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let pair = (4, 5);
+let (a, b) = pair; // a=4, b=5
+let (b, a) = (a, b); // Swap!
+
+let smaller = match pair {
+	(x, y) if x &lt; y => x,
+	(_, y) => y
+};
+
+match pair {
+	(0, y) => println!("Y-axis, coordinate {}", y),
+	(x, 0) => println!("X-axis, coordinate {}", x),
+	(0, 0) => println!("Origin"),
+	(x, y) => {
+	  let distance = num::sqrt(x*x + y*y);
+	  println!("Point is ({}, {}), and {} units from origin", x, y, distance);
+	}
+};
+	</code></pre>
+	</section>
 </section>
+
 			</div>
 
 		</div>
