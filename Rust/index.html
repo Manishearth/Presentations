@@ -108,7 +108,7 @@ for (itr; itr !=x.end(); itr++) {
 	</section>
 </section>
 <section>
-	<img src="rust.png" border=0>
+	<img src="rust.png" height="80%" border=0>
 </section>
 <section>
 	<section>
@@ -161,7 +161,7 @@ let number = 5u;
 let size = match number {
 	0 => "none",
 	2 | 3 => "tiny",
-	4..7 => "small",
+	4..7 => "small",	
 	8..20 => "medium",
 	_ => "large"
 };
@@ -182,7 +182,6 @@ match number {
 let pair = (4, 5);
 let (a, b) = pair; // a=4, b=5
 let (b, a) = (a, b); // Swap!
-
 let smaller = match pair {
 	(x, y) if x &lt; y => x,
 	(_, y) => y
