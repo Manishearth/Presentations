@@ -350,6 +350,7 @@ abc(myvec); // myvec moved into function, cannot be used after this
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 let x = vec![1u,2u,3u];
 let y = &x; // the vector was "borrowed"
+let c = x.clone(); // Explicit copy
 println!("x is {}", x)
 println!("y is {}", *y)
 
@@ -414,6 +415,12 @@ let mut x = box 1u; // On the heap
 
 // Type Box&ltuint>
 // Also gets moved, not copied
+
+fn abc() -> Box&lt;int> {
+	let x = box 1; // malloc() happened
+	// do stuff with x or *x
+	// free() happened
+}
 	</code></pre>
 	</section>
 	<section>
@@ -431,16 +438,56 @@ let pair = (box 1u, box 2u);
 }
 
 // Works in match statements too!
-let maybe_heap = Some(box 1);
+let maybe_heap = Some(box 1u);
 match maybe_heap {
 	Some(ref x) => println!("{}", x),
 	None => println!("No variable")
 }
 	</code></pre>
 	</section>
+	<section>
+		<h2>Strings and arrays</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let mut fixed_len_vec = [1u,2u,3u]; // Of type [uint, ..3]
+fixed_len_vec[1] = 2;
+let mut buffer = vec![1u,2u,3u]; // Of type Vec&lt;uint>
+buffer.push(20); // Now it is of length 4!
+let slice = buffer.slice(0, 2); // Of type &[uint]
+let slice = &[1,2,3] // Same
+
+let owned = "Manish".to_string(); // of type String
+let static_slice = "Manish"; // type `&'static str`
+let slice = owned.slice(0, 3); // type &str . Basically a borrowed "view" into the String
+	</code></pre>
+	</section>
+	<section>
+		<h2>Unsafe</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+extern crate core;
+use std::mem;
+use core::ptr;
+fn main() {
+ let y = *dangle() + 1;
+ // Segfault.
+}
+
+fn dangle() -> Box&lt;int> {
+ unsafe {
+  // Null pointers!
+  let mut p: *mut int = ptr::mut_null();
+  let b = box 1; // Heap memory, will be deallocated at the end of this function
+  ptr::write(p, *b);
+  mem::transmute(p) // Converts to box and .. uh oh .. returns!
+ }
+}
+	</code></pre>
+	</section>	
+	<section>
+		<img src="trustme.png">
+	</section>
 </section>
 
-			</div>
+		</div>
 
 		</div>
 
