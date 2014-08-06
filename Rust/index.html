@@ -138,10 +138,13 @@ fn multiply(x: int, y: int) -> int {
 		<h2>Control flow</h2>
 	<p>Semicolons have meaning!</p>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let b = 3i;
 let a = if b > 1 {
 	let mut c = b - 5;
 	c = c * b; // Removing these two semicolons cause errors
 	c // This "returns" the value of c, due to the lack of semicolon
+} else {
+	1i
 }
 
 fn greater(a: int, b: int) -> int {
@@ -170,7 +173,7 @@ match number {
 	2 | 8 | 9 => {
 	  let mut c = 1;
 	  c += number;
-	  println!("The incremented number is {:s}", c)
+	  println!("The incremented number is {}", c)
 	},
 	_ => println!("We don't have the ability to increment this number, sorry")
 }
@@ -179,7 +182,7 @@ match number {
 	<section>
 		<h2>Destructuring</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let pair = (4, 5);
+let pair = (4u, 5u);
 let (a, b) = pair; // a=4, b=5
 let (b, a) = (a, b); // Swap!
 let smaller = match pair {
@@ -188,14 +191,251 @@ let smaller = match pair {
 };
 
 match pair {
+	(0, 0) => println!("Origin"),
 	(0, y) => println!("Y-axis, coordinate {}", y),
 	(x, 0) => println!("X-axis, coordinate {}", x),
-	(0, 0) => println!("Origin"),
 	(x, y) => {
-	  let distance = num::sqrt(x*x + y*y);
+	  let distance = ((x*x + y*y) as f32).sqrt();
 	  println!("Point is ({}, {}), and {} units from origin", x, y, distance);
 	}
 };
+	</code></pre>
+	</section>
+</section>
+
+<section>
+	<section>
+		<h1>Datatypes</h1>
+	</section>
+	<section>
+		<h2>Structs</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+struct Point {
+	pub x: int,
+	pub y: int
+}
+
+let p = Point {x: 0, y: 0};
+println!("X coordinate is {}", p.x)
+	</code></pre>
+	</section>
+	<section>
+		<h2>Enums</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+enum Shape {
+	Circle(Point, uint),
+	Rectangle(Point, Point)
+}
+
+// Real world example
+enum Option&lt;T> {
+	Some(T),
+	None
+}
+
+let origin = Point {x: 0, y: 0};
+let circ = Circle(origin, 10);
+	</code></pre>
+	</section>
+	<section>
+		<h2>Matching!</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let perimeter = match shape {
+	Circle(_, r) => 2*pi*r,
+	Rectangle(p1, p2) => 2*abs(p2.x - p1.x) + 2*abs(p2.y - p1.y)
+}
+
+// But wait, we can match on structs too!
+let perimeter = match shape {
+	Circle(_, r) => 2*pi*r,
+	Rectangle(Point {x: x1, y: y1}, Point {x: x2, y: y2}) => 
+	  2*abs(x2 - x1) + 2*abs(y2 - y1)
+}
+
+// Patterns nest pretty well
+match point {
+	Point {x: 2..6, y: -1..5} => println!("I like this point"),
+	_ => println!("I do not like this point")
+}
+	</code></pre>
+	</section>
+	<section>
+		<h2>Generics</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+enum Option&lt;T> {
+	Some(T),
+	None
+}
+
+fn maybe_sqrt(x: int) -> Option&lt;T> {
+	if x >=0 {
+		Some(sqrt(x as uint))
+	} else {
+		None
+	}
+}
+	</code></pre>
+	</section>
+	<section>
+		<h2>Implementations</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+impl Point {
+	fn distance(&self) { // Called as point.distance()
+		((self.x*self.x + self.y*self.y) as f32).sqrt()
+	}
+	fn random() -> Point { // Called as Point::random()
+	  Point {
+	    x: 4, // Chosen by fair dice roll
+	    y: 4  // Guaranteed to be random
+	  }
+	}
+}
+
+	</code></pre>
+	</section>
+	<section>
+		<h2>Traits</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+// Haskell's type classes, anyone?
+trait Pointy {
+        fn poke(&self, at: &str);
+        // One can also give full function bodies here
+}
+
+impl Pointy for Point {
+        fn poke(&self, at: &str) {
+                println!("Poked {}", at)
+        }
+}
+
+fn poke_forever&lt;T: Pointy>(pointy: T, at: &str) {
+        loop {
+         pointy.poke(at)
+        }
+}
+
+
+	</code></pre>
+	</section>
+</section>
+
+
+<section>
+	<section>
+		<h1>Memory management!</h1>
+		<h3>The good stuff</h3>
+	</section>
+	<section>
+		<h2>Moves and copies</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let x = 5i;
+let y = x;
+println!("x is {}", x) // y was copied from x
+
+let x = vec![1u,2u,3u]; / A vector
+let y = x; // the vector was "moved"
+println!("y is {}", y)
+// Will not work, the vector is "owned" by y
+// println!("x is {}", x)
+
+fn abc(x: Vec&lt;uint>) {
+	// do something
+}
+let myvec = vec![1u,2u,3u];
+abc(myvec); // myvec moved into function, cannot be used after this
+	</code></pre>
+	</section>
+	<section>
+		<h2>Borrowing</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let x = vec![1u,2u,3u];
+let y = &x; // the vector was "borrowed"
+println!("x is {}", x)
+println!("y is {}", *y)
+
+fn abc(x: &Vec&lt;uint>) {
+	// do something
+}
+let myvec = vec![1u,2u,3u];
+abc(myvec); // Passes a borrowed reference
+// Still can use mybox here
+	</code></pre>
+	</section>
+	<section>
+		<h2>Borrowing and mutability</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let mut x = vec![1u,2u,3u];
+{
+  let y = &x; // the pointer was "borrowed"
+  // x.push(1); // Not allowed, x is currently borrowed and cannot be mutated
+  // y.push(1); // Not allowed, y is not a mutable reference
+}
+x.push(1) // The borrow was "returned", we can mutate now
+
+let mut x = vec![1u,2u,3u];
+{
+  let y = &mut x; // the pointer was "borrowed", mutably
+  // x.push(1); // Still not allowed, x is currently borrowed and cannot be mutated
+  // println!("x is {}", x) // also not allowed, y is mutating this
+  y.push(1); // Allowed, y is a mutable reference
+}
+x.push(1) // The borrow was "returned", we can mutate now
+	</code></pre>
+	</section>
+	<section>
+		<h2>Ownership and implementations</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+struct Polygon {points: Vec&ltPoint>};
+impl Point {
+	// This one moves
+	fn draw_move(self) {
+		// ...
+	}
+	// This one borrows
+	fn draw_borrow(&self) {
+		// ...
+		// after calling p.draw_borrow() I can still use p
+	}
+	// This one borrows mutably
+	fn draw_borrow_mut(&mut self) {
+		// ...
+		// I can mutate self here
+	}
+}
+
+// (*polygon).draw_borrow() dereference not necessary
+	</code></pre>
+	</section>
+	<section>
+		<h2>The heap</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let mut x = box 1u; // On the heap
+*x = 2;
+
+// Type Box&ltuint>
+// Also gets moved, not copied
+	</code></pre>
+	</section>
+	<section>
+		<h2>Destructuring and binding by reference</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let pair = (box 1u, box 2u);
+let (a, b) = pair;
+// The boxes were moved out of `pair`, cannot use it anymore
+
+let pair = (box 1u, box 2u);
+{
+ let (ref a, ref b) = pair;
+ // a, b are borrowed references now, so everything is fine
+ // use `ref mut` for mutable references
+}
+
+// Works in match statements too!
+let maybe_heap = Some(box 1);
+match maybe_heap {
+	Some(ref x) => println!("{}", x),
+	None => println!("No variable")
+}
 	</code></pre>
 	</section>
 </section>
