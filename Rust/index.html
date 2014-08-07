@@ -63,10 +63,8 @@
 	<h2>Dangling pointers</h2>
 	<pre><code class="c" data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
 int* abc() {
-	int *x;
-	*x = 1;
-	// .....
-	return x;
+	int x = 1;
+	return &amp;x;
 }
 	</code></pre>
 	</section>
@@ -268,7 +266,7 @@ enum Option&lt;T> {
 }
 
 fn maybe_sqrt(x: int) -> Option&lt;T> {
-	if x >=0 {
+	if x >= 0 {
 		Some(sqrt(x as uint))
 	} else {
 		None
