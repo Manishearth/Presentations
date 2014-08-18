@@ -34,6 +34,14 @@
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
+        <style>
+            pre, code {
+                overflow: visible;
+            }
+            ::-webkit-scrollbar { 
+                 display: none; 
+            }
+        </style>
 	</head>
 
 	<body>
@@ -122,14 +130,13 @@ if a > 1 {
 let mut i = 0; // Can also be `let mut i: int = 0;`
 loop {
 	if i > 10 { break; }
-	i+=1;
+	i += 1;
 	println!("{:?}", i)
 }
 
 fn multiply(x: int, y: int) -> int {
 	return x*y // The return statement is unnecessary, this will be explained later
 }
-
 	</code></pre>
 	</section>
 	<section>
@@ -267,9 +274,9 @@ enum Option&lt;T> {
 
 fn maybe_sqrt(x: int) -> Option&lt;T> {
 	if x >= 0 {
-		Some(sqrt(x as uint))
+	  Some(sqrt(x as uint))
 	} else {
-		None
+	  None
 	}
 }
 	</code></pre>
@@ -330,7 +337,7 @@ let x = 5i;
 let y = x;
 println!("x is {}", x) // y was copied from x
 
-let x = vec![1u,2u,3u]; / A vector
+let x = vec![1u, 2u, 3u]; / A vector
 let y = x; // the vector was "moved"
 println!("y is {}", y)
 // Will not work, the vector is "owned" by y
@@ -339,14 +346,14 @@ println!("y is {}", y)
 fn abc(x: Vec&lt;uint>) {
 	// do something
 }
-let myvec = vec![1u,2u,3u];
+let myvec = vec![1u, 2u, 3u];
 abc(myvec); // myvec moved into function, cannot be used after this
 	</code></pre>
 	</section>
 	<section>
 		<h2>Borrowing</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let x = vec![1u,2u,3u];
+let x = vec![1u, 2u, 3u];
 let y = &x; // the vector was "borrowed"
 let c = x.clone(); // Explicit copy
 println!("x is {}", x)
