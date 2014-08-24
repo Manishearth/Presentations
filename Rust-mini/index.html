@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Rust</title>
+
+		<meta name="description" content="A language for writing memory safe and efficient programs">
+		<meta name="author" content="Manish Goregaokar">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/sky.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+        <style>
+            pre, pre>code {
+                overflow: visible;
+                font-size:25px !important;
+            }
+            /*::-webkit-scrollbar { 
+                 display: none; 
+            }*/
+        </style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+	<h1>Rust</h1>
+	<h3>The memory safe and efficient language of the future</h3>
+	<p>
+		<a href="http://twitter.com/Manishearth">@Manishearth</a>
+	</p>
+</section>
+<section>
+	<section>
+	<h2>C++ problems</h2>
+	<ul>
+		<li>Dangling pointers</li>
+		<li>Iterator invalidation</li>
+		<li>Thread safety</li>
+
+	</ul>
+	</section>
+	<section>
+	<h2>Dangling pointers</h2>
+	<br>
+	<pre><code class="c" data-trim contenteditable style="margin-top: 18px;">
+int* abc() {
+	int x = 1;
+	return &amp;x;
+}
+	</code></pre>
+	</section>
+	<section>
+	<h2>Iterator invalidation</h2>
+	<br>
+	<pre><code class="c" data-trim style="margin-top: 18px;">
+// Create the vector
+vector&ltint> x;
+x.push_back(1);
+x.push_back(2);
+x.push_back(3);
+
+// Get an iterator
+vector&lt;int>::iterator itr = x.begin();
+
+int j=0;
+for (itr; itr !=x.end(); itr++) {
+	x.push_back(j); // Uh oh!
+	j++;
+	cout << j << " .. ";
+}
+	</code></pre>
+	<br>
+	<small>From <a href="http://stackoverflow.com/questions/5638323/modifying-a-data-structure-while-iterating-over-it">a Stack Overflow question</a>, by <a href="http://stackoverflow.com/users/620189/user620189">user620189</a></small>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>Why is this a problem?</h2>
+	<ul>
+		<li>SEGFAULT, SEGFAULT, SEGFAULT (Or: runtime failures are bad)</li>
+		<li>Extremely common source of security bugs in browsers and similar applications</li>
+		<li>Existing solutions for safety are slow and usually require a separate runtime with a GC</li>
+	</ul>
+	<img src="heartbleed.png" width="25%" style="border:0px">
+	</section>
+	<section>
+		<img src="xkcd-segfault.png" width="100%">
+	</section>
+    <section>
+        <h3>Existing solutions</h3>
+        <ul>
+            <li><b>Java:</b> Garbage collection
+            <li><b>Python, Ruby, etc:</b> Interpreted languages, no need
+            <li><b>C++11:</b> Owned "smart" pointers
+        </ul>
+    </section>
+</section>
+<section>
+	<img src="rust.png" height="80%" border=0>
+</section>
+<section>
+	<section>
+		<h1>Memory management!</h1>
+		<h3>The good stuff</h3>
+	</section>
+	<section>
+		<h2>Moves and copies</h2>
+	<pre><code class="rust" data-trim style="margin-top: 18px;">
+let x = 5i;
+let y = x;
+println!("x is {}", x) // y was copied from x
+
+let x = vec![1u, 2u, 3u]; // A vector
+let y = x; // the vector was "moved"
+println!("y is {}", y)
+// Will not work, the vector is "owned" by y
+// println!("x is {}", x)
+
+fn abc(x: Vec&lt;uint>) {
+	// do something
+}
+let myvec = vec![1u, 2u, 3u];
+abc(myvec); // myvec moved into function, cannot be used after this
+	</code></pre>
+	</section>
+	<section>
+		<h2>Borrowing</h2>
+	<pre><code class="rust" data-trim style="margin-top: 18px;">
+let x = vec![1u, 2u, 3u];
+let y = &x; // the vector was "borrowed"
+let c = x.clone(); // Explicit copy
+println!("x is {}", x)
+println!("y is {}", *y)
+
+fn abc(x: &Vec&lt;uint>) {
+	// do something
+}
+let myvec = vec![1u,2u,3u];
+abc(myvec); // Passes a borrowed reference
+// Still can use mybox here
+	</code></pre>
+	</section>
+	<section>
+		<h2>Borrowing and mutability</h2>
+	<pre><code class="rust" data-trim style="margin-top: 18px;">
+let mut x = vec![1u,2u,3u];
+{
+  let y = &x; // the pointer was "borrowed"
+  // x.push(1); // Not allowed, x is currently borrowed and cannot be mutated
+  // y.push(1); // Not allowed, y is not a mutable reference
+}
+x.push(1) // The borrow was "returned", we can mutate now
+
+let mut x = vec![1u,2u,3u];
+{
+  let y = &mut x; // the pointer was "borrowed", mutably
+  // x.push(1); // Still not allowed, x is currently borrowed and cannot be mutated
+  // println!("x is {}", x) // also not allowed, y is mutating this
+  y.push(1); // Allowed, y is a mutable reference
+}
+x.push(1) // The borrow was "returned", we can mutate now
+	</code></pre>
+	</section>
+	<section>
+		<h2>The heap</h2>
+	<pre><code class="rust" data-trim style="margin-top: 18px;">
+let mut x = box 1u; // On the heap
+*x = 2;
+
+// Type Box&ltuint>
+// Also gets moved, not copied
+
+fn abc() -> Box&lt;int> {
+	let x = box 1; // malloc() happened
+	// do stuff with x or *x
+	// free() happened
+}
+	</code></pre>
+	</section>
+	<section>
+		<h2>Unsafe</h2>
+	<pre><code class="rust" data-trim style="margin-top: 18px;">
+extern crate core;
+use std::mem;
+use core::ptr;
+fn main() {
+ let y = *dangle() + 1;
+ // Segfault.
+}
+
+fn dangle() -> Box&lt;int> {
+ unsafe {
+  // Null pointers!
+  let mut p: *mut int = ptr::mut_null();
+  let b = box 1; // Heap memory, will be deallocated at the end of this function
+  ptr::write(p, *b);
+  mem::transmute(p) // Converts to box and .. uh oh .. returns!
+ }
+}
+	</code></pre>
+	</section>	
+	<section>
+		<img src="trustme.png">
+	</section>
+</section>
+
+		</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				//theme: "sky", // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
