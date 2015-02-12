@@ -124,17 +124,17 @@ for (itr; itr !=x.end(); itr++) {
 		<h2>If, loops, functions</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 if a > 1 {
-	println!("{:?}", a)
+	println!("{:?}", a);
 }
 
-let mut i = 0; // Can also be `let mut i: int = 0;`
+let mut i: i13 = 0;
 loop {
 	if i > 10 { break; }
 	i += 1;
-	println!("{:?}", i)
+	println!("{:?}", i);
 }
 
-fn multiply(x: int, y: int) -> int {
+fn multiply(x: i32, y: i32) -> int {
 	return x*y // The return statement is unnecessary, this will be explained later
 }
 	</code></pre>
@@ -143,7 +143,7 @@ fn multiply(x: int, y: int) -> int {
 		<h2>Control flow</h2>
 	<p>Semicolons have meaning!</p>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let b = 3i;
+let b = 3i32;
 let a = if b > 1 {
 	let mut c = b - 5;
 	c = c * b; // Removing these two semicolons cause errors
@@ -152,7 +152,7 @@ let a = if b > 1 {
 	1i
 }
 
-fn greater(a: int, b: int) -> int {
+fn greater(a: i32, b: i32) -> int {
 	if a > b {
 		  a
 	} else {
@@ -165,12 +165,12 @@ fn greater(a: int, b: int) -> int {
 		<h2>Matching</h2>
 	<p>Switch-case just got a makeover</p>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let number = 5u;
+let number = 5u32;
 let size = match number {
 	0 => "none",
 	2 | 3 => "tiny",
-	4..7 => "small",	
-	8..20 => "medium",
+	4...7 => "small",	
+	8...20 => "medium",
 	_ => "large"
 };
 // Multiple statements in a match work!
@@ -178,7 +178,7 @@ match number {
 	2 | 8 | 9 => {
 	  let mut c = 1;
 	  c += number;
-	  println!("The incremented number is {}", c)
+	  println!("The incremented number is {}", c);
 	},
 	_ => println!("We don't have the ability to increment this number, sorry")
 }
@@ -216,8 +216,8 @@ match pair {
 		<h2>Structs</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 struct Point {
-	pub x: int,
-	pub y: int
+	pub x: i32,
+	pub y: i32
 }
 
 let p = Point {x: 0, y: 0};
@@ -228,7 +228,7 @@ println!("X coordinate is {}", p.x)
 		<h2>Enums</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 enum Shape {
-	Circle(Point, uint),
+	Circle(Point, u32),
 	Rectangle(Point, Point)
 }
 
@@ -239,7 +239,7 @@ enum Option&lt;T> {
 }
 
 let origin = Point {x: 0, y: 0};
-let circ = Circle(origin, 10);
+let circ = Shape::Circle(origin, 10);
 	</code></pre>
 	</section>
 	<section>
@@ -309,7 +309,7 @@ trait Pointy {
 
 impl Pointy for Point {
         fn poke(&self, at: &str) {
-                println!("Poked {}", at)
+                println!("Poked {}", at);
         }
 }
 
@@ -339,7 +339,7 @@ println!("x is {}", x) // y was copied from x
 
 let x = vec![1u, 2u, 3u]; / A vector
 let y = x; // the vector was "moved"
-println!("y is {}", y)
+println!("y is {}", y);
 // Will not work, the vector is "owned" by y
 // println!("x is {}", x)
 
@@ -415,16 +415,22 @@ impl Point {
 	<section>
 		<h2>The heap</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let mut x = box 1u; // On the heap
+let mut x = Box::new(1u32); // On the heap
 *x = 2;
 
-// Type Box&ltuint>
+// Type Box&lt;uint>
 // Also gets moved, not copied
 
-fn abc() -> Box&lt;int> {
+fn abc() {
 	let x = box 1; // malloc() happened
 	// do stuff with x or *x
 	// free() happened
+}
+
+fn def() -> Box&lt;uint>{
+	let x = box 1; // malloc() happened
+	// do stuff with x or *x
+	x // x returned to outer owner	
 }
 	</code></pre>
 	</section>
