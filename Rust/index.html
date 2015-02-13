@@ -114,7 +114,7 @@ for (itr; itr !=x.end(); itr++) {
 	</section>
 </section>
 <section>
-	<img src="rust.png" height="80%" border=0>
+	<img src="rust.png" style="max-height:75%; max-width:75%">  
 </section>
 <section>
 	<section>
@@ -149,10 +149,10 @@ let a = if b > 1 {
 	c = c * b; // Removing these two semicolons cause errors
 	c // This "returns" the value of c, due to the lack of semicolon
 } else {
-	1i
+	1i32
 }
 
-fn greater(a: i32, b: i32) -> int {
+fn greater(a: i32, b: i32) -> i32 {
 	if a > b {
 		  a
 	} else {
@@ -187,7 +187,7 @@ match number {
 	<section>
 		<h2>Destructuring</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let pair = (4u, 5u);
+let pair = (4u32, 5u32);
 let (a, b) = pair; // a=4, b=5
 let (b, a) = (a, b); // Swap!
 let smaller = match pair {
@@ -272,9 +272,9 @@ enum Option&lt;T> {
 	None
 }
 
-fn maybe_sqrt(x: int) -> Option&lt;T> {
+fn maybe_sqrt(x: i32) -> Option&lt;u32> {
 	if x >= 0 {
-	  Some(sqrt(x as uint))
+	  Some(sqrt(x) as u32)
 	} else {
 	  None
 	}
@@ -286,7 +286,7 @@ fn maybe_sqrt(x: int) -> Option&lt;T> {
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 impl Point {
 	fn distance(&self) { // Called as point.distance()
-		((self.x*self.x + self.y*self.y) as f32).sqrt()
+	    ((self.x*self.x + self.y*self.y) as f32).sqrt()
 	}
 	fn random() -> Point { // Called as Point::random()
 	  Point {
@@ -319,7 +319,6 @@ fn poke_forever&lt;T: Pointy>(pointy: T, at: &str) {
         }
 }
 
-
 	</code></pre>
 	</section>
 </section>
@@ -337,7 +336,7 @@ let x = 5i;
 let y = x;
 println!("x is {}", x) // y was copied from x
 
-let x = vec![1u, 2u, 3u]; / A vector
+let x = vec![1u32, 2u32, 3u32]; / A vector
 let y = x; // the vector was "moved"
 println!("y is {}", y);
 // Will not work, the vector is "owned" by y
@@ -353,7 +352,7 @@ abc(myvec); // myvec moved into function, cannot be used after this
 	<section>
 		<h2>Borrowing</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let x = vec![1u, 2u, 3u];
+let x = vec![1u32, 2u32, 3u32];
 let y = &x; // the vector was "borrowed"
 let c = x.clone(); // Explicit copy
 println!("x is {}", x)
@@ -363,14 +362,14 @@ fn abc(x: &Vec&lt;uint>) {
 	// do something
 }
 let myvec = vec![1u,2u,3u];
-abc(myvec); // Passes a borrowed reference
+abc(&myvec); // Passes a borrowed reference
 // Still can use mybox here
 	</code></pre>
 	</section>
 	<section>
 		<h2>Borrowing and mutability</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let mut x = vec![1u,2u,3u];
+let mut x = vec![1u32,2u32,3u32];
 {
   let y = &x; // the pointer was "borrowed"
   // x.push(1); // Not allowed, x is currently borrowed and cannot be mutated
@@ -378,7 +377,7 @@ let mut x = vec![1u,2u,3u];
 }
 x.push(1) // The borrow was "returned", we can mutate now
 
-let mut x = vec![1u,2u,3u];
+let mut x = vec![1u32,2u32,3u32];
 {
   let y = &mut x; // the pointer was "borrowed", mutably
   // x.push(1); // Still not allowed, x is currently borrowed and cannot be mutated
@@ -395,17 +394,17 @@ struct Polygon {points: Vec&ltPoint>};
 impl Point {
 	// This one moves
 	fn draw_move(self) {
-		// ...
+	    // ...
 	}
 	// This one borrows
 	fn draw_borrow(&self) {
-		// ...
-		// after calling p.draw_borrow() I can still use p
+	    // ...
+	    // after calling p.draw_borrow() I can still use p
 	}
 	// This one borrows mutably
 	fn draw_borrow_mut(&mut self) {
-		// ...
-		// I can mutate self here
+	    // ...
+	    // I can mutate self here
 	}
 }
 
@@ -418,7 +417,7 @@ impl Point {
 let mut x = Box::new(1u32); // On the heap
 *x = 2;
 
-// Type Box&lt;uint>
+// Type Box&lt;u32>
 // Also gets moved, not copied
 
 fn abc() {
@@ -427,8 +426,8 @@ fn abc() {
 	// free() happened
 }
 
-fn def() -> Box&lt;uint>{
-	let x = box 1; // malloc() happened
+fn def() -> Box&lt;u32>{
+	let x = Box::new(1); // malloc() happened
 	// do stuff with x or *x
 	x // x returned to outer owner	
 }
@@ -437,11 +436,11 @@ fn def() -> Box&lt;uint>{
 	<section>
 		<h2>Destructuring and binding by reference</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let pair = (box 1u, box 2u);
+let pair = (box 1u32, box 2u32);
 let (a, b) = pair;
 // The boxes were moved out of `pair`, cannot use it anymore
 
-let pair = (box 1u, box 2u);
+let pair = (box 1u32, box 2u32);
 {
  let (ref a, ref b) = pair;
  // a, b are borrowed references now, so everything is fine
@@ -449,7 +448,7 @@ let pair = (box 1u, box 2u);
 }
 
 // Works in match statements too!
-let maybe_heap = Some(box 1u);
+let maybe_heap = Some(box 1u32);
 match maybe_heap {
 	Some(ref x) => println!("{}", x),
 	None => println!("No variable")
@@ -459,12 +458,12 @@ match maybe_heap {
 	<section>
 		<h2>Strings and arrays</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let mut fixed_len_vec = [1u,2u,3u]; // Of type [uint, ..3]
+let mut fixed_len_vec = [1u32,2u32,3u32]; // Of type [u32, ..3]
 fixed_len_vec[1] = 2;
-let mut buffer = vec![1u,2u,3u]; // Of type Vec&lt;uint>
+let mut buffer = vec![1u32,2u32,3u32]; // Of type Vec&lt;u32>
 buffer.push(20); // Now it is of length 4!
-let slice = buffer.slice(0, 2); // Of type &[uint]
-let slice = &[1,2,3] // Same
+let slice = buffer[0..2]; // Of type &[u32]
+let slice = &[1u32,2u32,3u32] // Same
 
 let owned = "Manish".to_string(); // of type String
 let static_slice = "Manish"; // type `&'static str`
@@ -482,11 +481,11 @@ fn main() {
  // Segfault.
 }
 
-fn dangle() -> Box&lt;int> {
+fn dangle() -> Box&lt;u32> {
  unsafe {
   // Null pointers!
   let mut p: *mut int = ptr::mut_null();
-  let b = box 1; // Heap memory, will be deallocated at the end of this function
+  let b = Box::new(1u32); // Heap memory, will be deallocated at the end of this function
   ptr::write(p, *b);
   mem::transmute(p) // Converts to box and .. uh oh .. returns!
  }
