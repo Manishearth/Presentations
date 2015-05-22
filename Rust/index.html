@@ -127,14 +127,14 @@ if a > 1 {
 	println!("{:?}", a);
 }
 
-let mut i: i13 = 0;
+let mut i: i32 = 0;
 loop {
 	if i > 10 { break; }
 	i += 1;
 	println!("{:?}", i);
 }
 
-fn multiply(x: i32, y: i32) -> int {
+fn multiply(x: i32, y: i32) -> i32 {
 	return x*y // The return statement is unnecessary, this will be explained later
 }
 	</code></pre>
@@ -150,7 +150,7 @@ let a = if b > 1 {
 	c // This "returns" the value of c, due to the lack of semicolon
 } else {
 	1i32
-}
+};
 
 fn greater(a: i32, b: i32) -> i32 {
 	if a > b {
@@ -259,7 +259,7 @@ let perimeter = match shape {
 
 // Patterns nest pretty well
 match point {
-	Point {x: 2..6, y: -1..5} => println!("I like this point"),
+	Point {x: 2...6, y: -1...5} => println!("I like this point"),
 	_ => println!("I do not like this point")
 }
 	</code></pre>
@@ -285,7 +285,7 @@ fn maybe_sqrt(x: i32) -> Option&lt;u32> {
 		<h2>Implementations</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 impl Point {
-	fn distance(&self) { // Called as point.distance()
+	fn distance(&self) -> f32 { // Called as point.distance()
 	    ((self.x*self.x + self.y*self.y) as f32).sqrt()
 	}
 	fn random() -> Point { // Called as Point::random()
@@ -332,52 +332,52 @@ fn poke_forever&lt;T: Pointy>(pointy: T, at: &str) {
 	<section>
 		<h2>Moves and copies</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let x = 5i;
+let x = 5i8;
 let y = x;
-println!("x is {}", x) // y was copied from x
+println!("x is {:?}", x); // y was copied from x
 
-let x = vec![1u32, 2u32, 3u32]; / A vector
+let x = vec![1u8, 2u8, 3u8]; // A vector
 let y = x; // the vector was "moved"
-println!("y is {}", y);
+println!("y is {:?}", y);
 // Will not work, the vector is "owned" by y
 // println!("x is {}", x)
 
-fn abc(x: Vec&lt;uint>) {
-	// do something
+fn abc(x: Vec&lt;u8>) {
+    // do something
 }
-let myvec = vec![1u, 2u, 3u];
+let myvec = vec![1u8, 2u8, 3u8];
 abc(myvec); // myvec moved into function, cannot be used after this
 	</code></pre>
 	</section>
 	<section>
 		<h2>Borrowing</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let x = vec![1u32, 2u32, 3u32];
+let x = vec![1u8, 2u8, 3u8];
 let y = &x; // the vector was "borrowed"
 let c = x.clone(); // Explicit copy
-println!("x is {}", x)
-println!("y is {}", *y)
+println!("x is {:?}", x);
+println!("y is {:?}", *y);
 
-fn abc(x: &Vec&lt;uint>) {
-	// do something
+fn abc(x: &Vec&lt;u8>) {
+    // do something
 }
-let myvec = vec![1u,2u,3u];
+let myvec = vec![1u8,2u8,3u8];
 abc(&myvec); // Passes a borrowed reference
-// Still can use mybox here
+// Still can use myvec here
 	</code></pre>
 	</section>
 	<section>
-		<h2>Borrowing and mutability</h2>
+		<h2>Borrowing & mutability</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let mut x = vec![1u32,2u32,3u32];
+let mut x = vec![1u8,2u8,3u8];
 {
   let y = &x; // the pointer was "borrowed"
   // x.push(1); // Not allowed, x is currently borrowed and cannot be mutated
   // y.push(1); // Not allowed, y is not a mutable reference
 }
-x.push(1) // The borrow was "returned", we can mutate now
+x.push(1); // The borrow was "returned", we can mutate now
 
-let mut x = vec![1u32,2u32,3u32];
+let mut x = vec![1u8,2u8,3u8];
 {
   let y = &mut x; // the pointer was "borrowed", mutably
   // x.push(1); // Still not allowed, x is currently borrowed and cannot be mutated
@@ -414,14 +414,14 @@ impl Point {
 	<section>
 		<h2>The heap</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let mut x = Box::new(1u32); // On the heap
+let mut x = Box::new(1); // On the heap
 *x = 2;
 
 // Type Box&lt;u32>
 // Also gets moved, not copied
 
 fn abc() {
-	let x = box 1; // malloc() happened
+	let x = Box::new(1); // malloc() happened
 	// do stuff with x or *x
 	// free() happened
 }
@@ -436,11 +436,11 @@ fn def() -> Box&lt;u32>{
 	<section>
 		<h2>Destructuring and binding by reference</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let pair = (box 1u32, box 2u32);
+let pair = (Box::new(1), Box::new(2));
 let (a, b) = pair;
 // The boxes were moved out of `pair`, cannot use it anymore
 
-let pair = (box 1u32, box 2u32);
+let pair = (Box::new(1), Box::new(2));
 {
  let (ref a, ref b) = pair;
  // a, b are borrowed references now, so everything is fine
@@ -448,7 +448,7 @@ let pair = (box 1u32, box 2u32);
 }
 
 // Works in match statements too!
-let maybe_heap = Some(box 1u32);
+let maybe_heap = Some(Box::new(1));
 match maybe_heap {
 	Some(ref x) => println!("{}", x),
 	None => println!("No variable")
@@ -458,24 +458,23 @@ match maybe_heap {
 	<section>
 		<h2>Strings and arrays</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
-let mut fixed_len_vec = [1u32,2u32,3u32]; // Of type [u32, ..3]
+let mut fixed_len_vec = [1,2,3]; // Of type [u32, ..3]
 fixed_len_vec[1] = 2;
-let mut buffer = vec![1u32,2u32,3u32]; // Of type Vec&lt;u32>
+let mut buffer = vec![1,2,3]; // Of type Vec&lt;u32>
 buffer.push(20); // Now it is of length 4!
-let slice = buffer[0..2]; // Of type &[u32]
-let slice = &[1u32,2u32,3u32] // Same
+let slice = &buffer[0..2]; // Of type &[u32]
+let slice = &[1,2,3]; // Same
 
 let owned = "Manish".to_string(); // of type String
 let static_slice = "Manish"; // type `&'static str`
-let slice = owned.slice(0, 3); // type &str . Basically a borrowed "view" into the String
+let slice = &owned[0..3]; // type &str . Basically a borrowed "view" into the String
 	</code></pre>
 	</section>
 	<section>
 		<h2>Unsafe</h2>
 	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
 extern crate core;
-use std::mem;
-use core::ptr;
+use std::{mem, ptr};
 fn main() {
  let y = *dangle() + 1;
  // Segfault.
@@ -484,7 +483,7 @@ fn main() {
 fn dangle() -> Box&lt;u32> {
  unsafe {
   // Null pointers!
-  let mut p: *mut int = ptr::mut_null();
+  let mut p: *mut int = ptr::null_mut();
   let b = Box::new(1u32); // Heap memory, will be deallocated at the end of this function
   ptr::write(p, *b);
   mem::transmute(p) // Converts to box and .. uh oh .. returns!
