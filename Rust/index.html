@@ -326,7 +326,7 @@ fn poke_forever&lt;T: Pointy>(pointy: T, at: &str) {
 
 <section>
 	<section>
-		<h1>Memory management!</h1>
+		<h1>Memory <br>management!</h1>
 		<h3>The good stuff</h3>
 	</section>
 	<section>
@@ -495,6 +495,29 @@ fn dangle() -> Box&lt;u32> {
 		<img src="trustme.png">
 	</section>
 	<section>
+		<h2>More features</h2>
+		<ul>
+			<li>Thread safety (data races)</li>
+			<li>Powerful zero cost abstractions</li>
+			<li>Error handling via result types</li>
+			<li>Associated types and constants</li>
+			<li>Closures</li>
+			<li>Plugin ecosystem (custom syntax extensions and lints)</li>
+		</ul>
+	</section>
+	<section>
+		<h2>Library status</h2>
+		<ul>
+			<li>HTTP: <a href="http://hyper.rs/">hyper</a>, <a href="https://github.com/frewsxcv/tiny-http">tiny-http</a>, <a href="https://github.com/iron/iron">Iron</a> (framework)</li>
+			<li>Game development: <a href="https://github.com/PistonDevelopers/piston">Piston</a></li>
+			<li><a href="http://github.com/servo/servo/">Servo</a> (browser engine)</li>
+			<li>HTML parsing: <a href="https://crates.io/crates/html5ever">html5ever</a></li>
+			<li><a href="https://crates.io/crates/regex">regex</a>, <a href="https://crates.io/crates/xml-rs">xml-rs</a><a href="https://crates.io/crates/gl_generator"> OpenGL Bindings</a>
+			<a href="https://crates.io/crates/glutin">glutin</a>, <a href="https://crates.io/crates/rust-crypto">crypto</a>, <a href="https://crates.io/crates/serde">serialization</a></li>
+			<li> .. <a href="http://crates.io">and many, many more!</a></li>
+		</ul>
+	</section>
+	<section>
 	<h2>Resources</h2>
 		<ul>
 			<li><a href="http://doc.rust-lang.org/book">http://doc.rust-lang.org/book</a></li>
@@ -509,7 +532,84 @@ fn dangle() -> Box&lt;u32> {
 		<h1>Thank you!</h1>
 	</section>
 </section>
+<section>
+	<section>
+		<h2>[Extra slides]</h2>
+	</section>
+	<section>
+		<h2>Thread safety</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+let (tx, rx) = channel();
 
+spawn(move || {
+	tx.send(1); // works!
+});
+
+let x = rx.recv();
+
+	</code></pre>		
+	</section>
+
+	<section>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+let (tx, rx) = channel();
+
+spawn(move || {
+	let x = Box::new(1);
+	tx.send(x); // works!
+});
+
+let x = rx.recv();
+
+	</code></pre>		
+	</section>
+	<section>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+let (tx, rx) = channel();
+
+spawn(move || {
+	let x = Box::new(1);
+	tx.send(&x); // nope
+});
+
+let x = rx.recv();
+
+	</code></pre>
+	</section>
+	<section>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+use std::rc::Rc;
+let (tx, rx) = channel();
+
+spawn(move || {
+	let x = Rc::new(1);
+	// refcounted pointer
+	// not threadsafe
+	tx.send(x.clone()); // nope
+});
+
+let x = rx.recv();
+
+	</code></pre>
+	</section>
+	<section>
+		<pre style="box-shadow: none">
+test.rs:18:1: 18:6 error: the trait `core::marker::Send` is not implemented for the type `alloc::rc::Rc&lt;i32>` [E0277]
+test.rs:18 spawn(move || {
+           ^~~~~
+test.rs:18:1: 18:6 note: `alloc::rc::Rc&lt;i32>` cannot be sent between threads safely
+test.rs:18 spawn(move || {
+		</pre>
+	</section>
+</section>
 		</div>
 
 		</div>
