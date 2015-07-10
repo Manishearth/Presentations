@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Rust</title>
+
+		<meta name="description" content="A language for writing memory safe and efficient programs">
+		<meta name="author" content="Manish Goregaokar">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/sky.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+        <style>
+            pre, code {
+                overflow: visible;
+            }
+            ::-webkit-scrollbar { 
+                 display: none; 
+            }
+        </style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+	<h1>Rust</h1>
+	<h3>The memory safe and efficient language of the future</h3>
+	<p>
+		<small><a href="http://twitter.com/Manishearth">@Manishearth</a></small>
+	</p>
+</section>
+<section>
+	<section>
+		<h2>What is Rust?</h2>
+		<ul>
+			<li>
+				A systems programming language
+			</li>
+			<li>
+				Memory and thread safe, enforced at compile time
+			</li>
+			<li>
+				Doesn't compromise performance for safety
+			</li>
+		</ul>
+	</section>
+	<section>
+		<h2>Why Rust?</h2>
+		<ul>
+			<li>Most modern languages take sides on the safety-vs-performance tradeoff</li>
+			<li>Rust shows that this tradeoff doesn't need to exist in the first place!</li>
+		</ul>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>C++ problems</h2>
+	<ul>
+		<li>Dangling pointers</li>
+		<li>Iterator invalidation</li>
+		<li>Thread safety</li>
+
+	</ul>
+	</section>
+	<section>
+	<h2>Dangling pointers</h2>
+	<pre><code class="cpp" data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+int* abc() {
+	int x = 1;
+	return &amp;x;
+}
+
+int* foo() {
+	int* x = new int;
+	*x = 1;
+	// ...
+	delete x;
+	return x;
+}
+	</code></pre>
+	</section>
+	<section>
+	<h2>Iterator invalidation</h2>
+	<pre><code class="cpp" data-trim style="font-size: 18px; margin-top: 20px;">
+// Create the vector
+vector&ltint> x;
+x.push_back(1);
+x.push_back(2);
+x.push_back(3);
+
+// Get an iterator
+vector&lt;int>::iterator itr = x.begin();
+
+int j=0;
+for (itr; itr !=x.end(); itr++) {
+	x.push_back(j); // Uh oh!
+	j++;
+	cout << j << " .. ";
+}
+	</code></pre>
+	<br>
+	<small>From <a href="http://stackoverflow.com/questions/5638323/modifying-a-data-structure-while-iterating-over-it">a Stack Overflow question</a>, by <a href="http://stackoverflow.com/users/620189/user620189">user620189</a></small>
+	</section>
+	<section>
+		<h2>
+			Thread safety
+		</h2>
+		<ul>
+			<li>
+				Data races happen when two threads try to access the same chunk of data concurrently
+			</li>
+			<li>
+				Can lead to unexpected modification of data
+			</li>
+		</ul>
+	</section>
+</section>
+<section>
+	<section>
+	<h2>Why is this a problem?</h2>
+	<ul>
+		<li>SEGFAULT, SEGFAULT, SEGFAULT (Or: runtime failures are bad)</li>
+		<li>Extremely common source of security bugs in browsers and similar applications</li>
+		<li>Existing solutions for safety are slow and usually require a separate runtime with a garbage collector</li>
+	</ul>
+	<img src="heartbleed.png">
+	</section>
+	<section>
+		<img src="xkcd-segfault.png" width="100%">
+	</section>
+</section>
+<section>
+	<img src="rust.png" style="max-height:75%; max-width:75%">  
+</section>
+<section>
+	<section>
+		<h1>Ownership</h1>
+	</section>
+	<section>
+		<h2>Ownership</h2>
+		<ul>
+			<li>
+				Data can have a single <i>owner</i>, who is responsible for the data, including cleanup.
+			</li>
+			<li>
+				Ownership can be passed around, i.e. <i>moved</i>
+			</li>
+			<li>
+				Temporary access can be given with <i>borrows</i>
+			</li>
+		</ul>
+	</section>
+	<section>
+		<h2>Ownership</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let x = 1; // "copyable" data, no need to be owned
+let y = x; // y is a copy of x
+println!("x: {} y: {}", x, y); // both accessible
+
+let a = vec![1, 2, 3]; // "owned" data, due to indirection involved
+let b = a; // "moved" into b
+println!("{:?}" , b); // Allowed, b owns the vector now
+println!("{:?}" , a); // Not allowed
+	</code></pre>
+	</section>
+	<section>
+		<h2>Ownership</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+fn do_stuff(x: Vec&lt;u8>) {
+	// do stuff
+}
+let y = vec![1,2,3];
+do_stuff(y);
+// y cannot be used here!
+	</code></pre>
+	</section>
+	<section>
+		<h2>Ownership</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+fn gimme_vec() -> Vec&lt;u8> {
+	let mut x = vec![1,2,3];
+	x.push(4);
+	return x; // "moved out" of the function
+			  // now destructors will not run at the end of this function
+}
+
+// ...
+
+{
+	let y = gimme_vec();
+	// destructors will run here, if we don't pass it somewhere else
+}
+
+	</code></pre>
+	</section>
+	<section>
+		<h2>Borrowing</h2>
+		<ul>
+			<li>
+				Ownership is not too useful on its own because we can't share data
+			</li>
+			<li>
+				Borrowing lets us temporarily give access of the object
+			</li>
+			<li>
+				When a borrow is active, nobody can mutate the object. When a mutable borrow is active, nobody but the mutable borrower can even read from the object
+			</li>
+			<li>
+				All of this is checked at compile time. The concept of "borrowing" has no trace at run time.
+			</li>
+		</ul>
+	</section>
+	<section>
+		<h2>Borrowing</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+fn do_stuff(x: &Vec<u8>) {
+	// do stuff
+}
+let y = vec![1,2,3];
+do_stuff(&y); // does not move y
+do_stuff(&y);
+do_stuff(&y);
+println!("{:?}", y);
+	</code></pre>
+	</section>
+
+	<section>
+		<h2>Borrowing</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let mut x = vec![1,2,3];
+{
+  let y = &x; // borrow the vector
+  // x.push(1); // Not allowed, x is currently borrowed and cannot be mutated
+  // y.push(1); // Not allowed, y is not a mutable reference
+}
+x.push(1); // The borrow was "returned", we can mutate now
+
+let mut x = vec![1,2,3];
+{
+  let y = &mut x; // the vector was borrowed, mutably
+  // x.push(1); // Still not allowed, x is currently borrowed and cannot be mutated
+  // println!("x is {}", x) // also not allowed, y is mutating this
+  y.push(1); // Allowed, y is a mutable reference
+}
+x.push(1) // The borrow was "returned", we can mutate now
+	</code></pre>
+	</section>
+</section>
+<section>
+	<section><h1>Features</h1></section>
+	
+	<section>
+		<h2>If, loops, functions</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+if a > 1 {
+	println!("{:?}", a);
+}
+
+let mut i: i32 = 0;
+loop {
+	if i > 10 { break; }
+	i += 1;
+	println!("{:?}", i);
+}
+
+fn multiply(x: i32, y: i32) -> i32 {
+	return x*y // The return statement is unnecessary, this will be explained later
+}
+	</code></pre>
+	</section>
+	<section>
+		<h2>Structs</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+struct Point {
+	x: u32,
+	y: u32
+}
+
+let my_point = Point {x: 1, y: 1};
+
+	</code></pre>		
+	</section>
+	<section>
+		<h2>Enums</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+enum Shape {
+	Circle(Point, u32),
+	Rectangle(Point, Point)
+}
+
+// Real world example
+enum Option&lt;T> {
+	Some(T),
+	None
+}
+
+let origin = Point {x: 0, y: 0};
+let circ = Shape::Circle(origin, 10);
+	</code></pre>
+	</section>
+	<section>
+		<h2>Pattern matching</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let number = 5;
+let size = match number {
+	0 => "none",
+	2 | 3 => "tiny",
+	4...7 => "small",	
+	8...20 => "medium",
+	_ => "large"
+};
+// Multiple statements in a match work!
+match number {
+	2 | 8 | 9 => {
+	  let mut c = 1;
+	  c += number;
+	  println!("The incremented number is {}", c);
+	},
+	_ => println!("We don't have the ability to increment this number, sorry")
+}
+	</code></pre>
+	</section>
+	<section>
+		<h2>Pattern matching</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+let perimeter = match shape {
+	Circle(_, r) => 2*pi*r,
+	Rectangle(p1, p2) => 2*abs(p2.x - p1.x) + 2*abs(p2.y - p1.y)
+}
+
+// But wait, we can match on structs too!
+let perimeter = match shape {
+	Circle(_, r) => 2*pi*r,
+	Rectangle(Point {x: x1, y: y1}, Point {x: x2, y: y2}) => 
+	  2*abs(x2 - x1) + 2*abs(y2 - y1)
+}
+
+// Patterns nest pretty well
+match point {
+	Point {x: 2...6, y: -1...5} => println!("I like this point"),
+	_ => println!("I do not like this point")
+}
+	</code></pre>
+	</section>
+
+	<section>
+		<h2>Implementations</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+impl Point {
+	fn distance(&self) -> f32 { // Called as point.distance()
+	    ((self.x*self.x + self.y*self.y) as f32).sqrt()
+	}
+	fn random() -> Point { // Called as Point::random()
+	  Point {
+	    x: 4, // Chosen by fair dice roll
+	    y: 4  // Guaranteed to be random
+	  }
+	}
+}
+
+	</code></pre>
+	</section>
+	<section>
+		<h2>Traits</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+// Haskell's type classes, anyone?
+trait Pointy {
+        fn poke(&self, at: &str);
+        // One can also give full function bodies here
+}
+
+impl Pointy for Point {
+        fn poke(&self, at: &str) {
+                println!("Poked {}", at);
+        }
+}
+
+// Takes any Pointy objects and pokes with it
+fn poke_forever&lt;T: Pointy>(pointy: T, at: &str) {
+        loop {
+         pointy.poke(at)
+        }
+}
+
+	</code></pre>
+	</section>
+
+
+
+	<section>
+		<h2>Unsafe</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+extern crate core;
+use std::{mem, ptr};
+fn main() {
+ let y = *dangle() + 1;
+ // Segfault.
+}
+
+fn dangle() -> Box&lt;u32> {
+ unsafe {
+  // Null pointers!
+  let mut p: *mut int = ptr::null_mut();
+  let b = Box::new(1u32); // Heap memory, will be deallocated at the end of this function
+  ptr::write(p, *b);
+  mem::transmute(p) // Converts to box and .. uh oh .. returns!
+ }
+}
+	</code></pre>
+	</section>	
+	<section>
+		<img src="trustme.png">
+	</section>
+	<section>
+		<h2>More features</h2>
+		<ul>
+			<li>Thread safety (data races)</li>
+			<li>Powerful zero cost abstractions</li>
+			<li>Error handling via result types</li>
+			<li>Associated types and constants</li>
+			<li>Closures</li>
+			<li>Plugin ecosystem (custom syntax extensions and lints)</li>
+			<li>Interopability with C via FFI</li>
+		</ul>
+	</section>
+</section>
+<section>
+	<section>
+		<h2>Library status</h2>
+		<ul>
+			<li>HTTP: <a href="http://hyper.rs/">hyper</a>, <a href="https://github.com/frewsxcv/tiny-http">tiny-http</a>, <a href="https://github.com/iron/iron">Iron</a> (framework)</li>
+			<li>Game development: <a href="https://github.com/PistonDevelopers/piston">Piston</a></li>
+			<li><a href="http://github.com/servo/servo/">Servo</a> (browser engine)</li>
+			<li>HTML parsing: <a href="https://crates.io/crates/html5ever">html5ever</a></li>
+			<li><a href="https://crates.io/crates/regex">regex</a>, <a href="https://crates.io/crates/xml-rs">xml-rs</a><a href="https://crates.io/crates/gl_generator"> OpenGL Bindings</a>
+			<a href="https://crates.io/crates/glutin">glutin</a>, <a href="https://crates.io/crates/rust-crypto">crypto</a>, <a href="https://crates.io/crates/serde">serialization</a></li>
+			<li> .. <a href="http://crates.io">and many, many more!</a></li>
+		</ul>
+	</section>
+	<section>
+	<h2>Resources</h2>
+		<ul>
+			<li><a href="http://doc.rust-lang.org/book">http://doc.rust-lang.org/book</a></li>
+			<li><a href="http://rustbyexample.com/">http://rustbyexample.com/</a></li>
+			<li><a href="http://doc.rust-lang.org/">http://doc.rust-lang.org/</a></li>
+			<li><a href="http://manishearth.github.io/Presentations/Rust">http://manishearth.github.io/Presentations/Rust</a></li>
+			<li><a href="http://users.rust-lang.org/">http://users.rust-lang.org/</a></li>
+			<li><a href="http://reddit.com/r/rust/">http://reddit.com/r/rust/</a></li>
+		</ul>
+	</section>
+	<section>
+		<h1>Thank you!</h1>
+	</section>
+</section>
+<section>
+	<section>
+		<h2>[Extra slides]</h2>
+	</section>
+	<section>
+		<h2>Thread safety</h2>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+let (tx, rx) = channel();
+
+spawn(move || {
+	tx.send(1); // works!
+});
+
+let x = rx.recv();
+
+	</code></pre>		
+	</section>
+
+	<section>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+let (tx, rx) = channel();
+
+spawn(move || {
+	let x = Box::new(1);
+	tx.send(x); // works!
+});
+
+let x = rx.recv();
+
+	</code></pre>		
+	</section>
+	<section>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+let (tx, rx) = channel();
+
+spawn(move || {
+	let x = Box::new(1);
+	tx.send(&x); // nope
+});
+
+let x = rx.recv();
+
+	</code></pre>
+	</section>
+	<section>
+	<pre><code class="rust" data-trim style="font-size: 18px; margin-top: 20px;">
+use std::sync::mpsc::*;
+use std::thread::spawn;
+use std::rc::Rc;
+let (tx, rx) = channel();
+
+spawn(move || {
+	let x = Rc::new(1);
+	// refcounted pointer
+	// not threadsafe
+	tx.send(x.clone()); // nope
+});
+
+let x = rx.recv();
+
+	</code></pre>
+	</section>
+	<section>
+		<pre style="box-shadow: none">
+test.rs:18:1: 18:6 error: the trait `core::marker::Send` is not implemented for the type `alloc::rc::Rc&lt;i32>` [E0277]
+test.rs:18 spawn(move || {
+           ^~~~~
+test.rs:18:1: 18:6 note: `alloc::rc::Rc&lt;i32>` cannot be sent between threads safely
+test.rs:18 spawn(move || {
+		</pre>
+	</section>
+</section>
+		</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				//theme: "sky", // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
