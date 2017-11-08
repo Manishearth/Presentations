@@ -1,0 +1,302 @@
+♫
+
+(Introduce self and stuff if not introduced already)
+
+Hi, I'm Manish. I work on Servo, and have been involved in the Rust community for three years now.
+
+I'm going to talk about how we can be more "open", as in "welcoming", in our community.
+
+
+♫
+
+So, Open Source. In the past, a lot of software was proprietary. Folks had to pay licensing fees to
+get anything done. Our industry had an issue with the _availability_ of software, and out of this
+grew the free software and open source movements. These movements were focused on making software
+_available_; making it so that you could obtain copies of the software and source code with reduced
+or no restrictions.
+
+While there's always more work to be done, this goal has largely succeeded. It's pretty easy to find
+open source versions of some software or a library. A lot of the software we use on a day to day
+basis is open source or heavily reliant on open source components. It's amazing.
+
+As open as these projects are to their code being used, they're not necessarily as open -- as in
+"welcoming" -- to contributions. Sure, they're happy to accept patches from experienced
+contributors, but for inexperienced newcomers it's often _very_ nontrivial to get involved.
+
+I feel like this should change. I feel like people wanting to participate should be aided in doing so.
+
+So, I want to show you how your open source projects can be _welcoming_, not just _available_.
+
+♫
+
+I'd like to take a moment to just say that the Rust community -- all of you, and the thousands of
+others not here right now -- is one of the most welcoming online communities I've ever seen. People
+are patient, empathetic, and helpful.
+
+My goal is for us to be even better 😀
+
+♫
+Why should one bother to do this?
+
+¶ Really, I just feel that it's the right thing. But I'm sure not everyone agrees
+with me on this. So I'm going to give some other good reasons.
+
+One of the most common arguments against making projects more accessible is that
+"serious contributors can deal with this, and we don't care about the rest". It's
+an attitude that tries to be practical -- but it's flawed. Serious contributors
+rarely start out serious; they start out curious. If they encounter friction;
+they may decide to try something else. This isn't limited to inexperienced
+programmers; it happens with everyone. While some things in this talk will be specific to
+inexperienced contributors, most techniques here are not, and help experienced
+programmers get involved as well.
+
+¶ It usually doesn't take that much effort. It takes an hour or so to set up things
+like a contributing file. Mentoring an issue usually takes between zero and twice
+the amount of time you would need to fix it yourself.
+
+
+¶ Ultimately, it ends up being worth it. In my experience, whatever time you
+put into this more than recoups itself when being welcoming ends up in adding
+long-term contributors to the team.
+
+♫
+One example of this is Servo. Servo's an experimental browser engine in Rust, and in my opinion
+it's an extremely welcoming open source project. We do tons of mentoring, and as a result we have a
+very vibrant community of contributors, many of whom started off as complete novices and now
+regularly make large and impactful contributions. Servo's a very ambitious project, and it would
+not have progressed as much as it has if not for these contributors.
+
+We now are in a situation where _too many_ new contributors is a problem. We file good first bugs,
+and they get snapped up quickly. We keep running out! This happens so often that Simon invented
+a term for it:
+
+♫
+the E-Easy piranhas.
+
+♫
+
+Another example is Clippy. Clippy is a linting tool for Rust used by a lot of folks. For _some
+reason_ people who use Rust really enjoy being scolded by the compiler so much that they want to opt
+in to extra scoldings. 🤷
+
+Clippy started off as a small, not-very-serious project. I liked messing with compiler internals,
+and this was an opportunity for me to do just that. But folks started using it, and feature requests
+were piling up. A very enthusiastic ¶ Andre became a co maintainer when he wrote his own collection
+of lints which we merged together.
+
+Still, with two people, the project was progressing quite slowly. Issues kept piling up, and neither
+of us had the time to sit down and write a ton of lints, even if we wanted to. It was a cool
+project, but it was ... small. This is a problem so many open source maintainers have; they have
+cool stuff they want to work on, but time is limited and priorities exist.
+
+One day I decided to try and make it easier to contribute to clippy. I've benefited a lot from
+random open source projects helping me learn, and wanted to give back. We had ¶ 24 lints at the time.
+
+I sat down and did a couple of things. I wrote a CONTRIBUTING file which provided tips for working on
+the repository. I urged people to ask questions in the file. I also went and tagged every issue on the
+repo as easy, medium, or hard. And I shared the CONTRIBUTING file with the community. This didn't take
+much effort. Nor did mentoring the people who arrived.
+
+In one month, our quiet little repo had ¶ 59 lints, and 19 contributors. People kept dropping by,
+wanting to learn and contribute. We had one contributor, Georg, who made some very high-impact contributions,
+and we added him as a maintainer.
+
+Over time, we had a steady stream of contributions. We added ¶ Martin, and ¶ Oliver as maintainers. We now ¶
+have a ton of lints, and new ones being added all the time. Folks have often used clippy as a stepping stone
+for hacking on rustc.
+
+These days I don't have the time to hack on clippy, but thanks to my amazing co-maintainers and the community,
+the project is chugging along and becoming better every day. None of this would have happened if we hadn't
+put the effort into making clippy welcoming and accessible for contributions.
+
+♫
+
+...Anyway. All of this is to say that putting some effort into opening up your project can go a long
+way.
+
+Let's see _how_ we can do this effectively.
+
+♫
+
+Given a random issue on your repo, it's unlikely that a newcomer -- experienced or otherwise, will
+understand what's going on. Most issues require a lot of unstated context such that only existing
+contributors will be able to make sense of what's required to be done.
+
+It's very helpful for all new contributors if they have a way to find issues that are suitable for
+them to work on. Having an "easy bug" tag, or a discoverable page consolidating these issues, helps
+immensely.
+
+These bugs will often be ¶ bite sized tasks. It's better to tag more involved bugs as "medium" or
+"less easy". Easy bugs are not hard to create. If you notice something you want to refactor, file an easy
+bug! When working on something, if there are optional extras you want to add, try and ¶ extract them
+as self contained tasks and file easy bugs on those. It would be easier to just fix them now, sure, but there's
+a chance of a much bigger payoff if you help someone else fix it. Always be on the lookout for chunks
+of work like this that you can break off; I find that these are everywhere.
+
+¶ Don't make critical bugs into easy issues. If something needs to be solved soon, having it blocked
+on a newcomer is a recipe for unhappiness all around. You may end up pressurising the contributor
+to get the patch done, or end up doing it yourself while they are still working on it, which
+will leave a bad taste in their mouth.
+
+On the other hand, try to make the bugs impactful! People love to see that their patch will
+positively affect many others!
+
+It's good to ¶ provide context in these bugs. Link to the relevant code, and possibly to existing
+code solving a similar problem. Mention tests that they should get passing. Give some pointers on
+where to get started.
+
+If you have a lot of similar tasks, ¶ consolidate the common bits into a guide that you can link to
+from each bug.
+
+¶ Always solicit questions in these bugs. Make people know that it's okay to ask questions, and they
+will!
+
+¶ Contributions don't need to be limited to code! Pure documentation fixes can be quite valuable,
+and you open yourself up to contributors who prefer doing technical writing. rustc has a whole host
+of contributors mainly focused on docs, who do some stellar work. Even infrastructure
+work, that is, fixing CI, build configs, etc, can be made into easy bugs. Servo does this and we get
+frequent contributions. We even have an experienced contributor who put significant effort into
+completely revamping how our infrastructure works and making it much better.
+
+♫
+Document everything. These are questions you'll get asked anyway, better write them down once.
+This both saves your time and aids people who are too intimidated to ask questions.
+
+Make sure your ¶ README.md is up to date with ¶ build info. The nice thing about Rust is that it's
+usually just `cargo build`, but if you have weird steps or prerequisites, document them. Also,
+make sure you prominently link to ¶ your contributions file.
+
+On that note, ¶ create a CONTRIBUTING.md, where you can put the bulk of the info for new
+contributors. The ¶ patch workflow is probably one of the most important things to put in it; this
+helps both experienced and new contributors. It's very important you don't miss anything here! A few
+months ago, I wanted to fix some things in a somewhat well-known established open source tool. I had
+patches ready to go, and I went to look for how I could submit them. They had a contributing file,
+which went in excruciating detail on various things. It had a large section on coding style. It had
+another large section on the style, length, and possibly color of your commit messages. Plenty of
+information, but they completely forgot to mention how patches were to be submitted! They just
+expected you to ... know. Ultimately, after some googling, I found their patch mailing list and
+submitted a patch, but there were some issues getting that to work too, which require foreknowledge
+that could have been made clear in the contributing file. It was a rather frustrating
+experience and I went from wanting to maybe make some more involved patches to not really
+wanting to touch the project again, even to just fix the shoddy documentation that caused this issue
+in the first place.
+
+Aside from the patch workflow, ¶ link to places where discussions happen, and where questions can be
+asked. This can be IRC, mailing lists, or even just the issue tracker. Encourage questions!
+
+¶ Include some information on how the tests work. ¶ Have an overview of the codebase so that
+it's easier for people to find things. ¶ Link to the API docs of your codebase and libraries it uses.
+
+¶ Include a code of conduct if you don't have one already. Make it clear that certain kinds of behavior
+are not okay on your project.
+
+¶ Github has a neat feature where you can pre-fill issue and pull request bodies with templates.
+Servo uses these templates to provide checklists for contributors, to remind them to do certain
+things whilst submitting. This helps automate away having to ask contributors to do things like
+run tests.
+
+♫
+
+One of the most common sources of friction for newcomers is overcomplicated contribution processes.
+Usually, these processes exist for a reason. Complicated projects need complicated review tools
+and complicated issue trackers.
+
+But for most new contributions, parts of these processes seem unnecessary, and don't provide
+anything other than friction.
+
+For example, in Servo we use an excellent review tool called Reviewable. It handles rebases well and
+lets you keep track of review progress. It's great.
+
+But it's also a very complicated tool. It takes quite a while to get used to. I still get confused
+with some of its features.
+
+But we don't require people to use this; the tool is optional and gets used only for large pull requests.
+Cool review tools aren't really necessary for small ones, so we don't use it there, and it's
+one less tool that newcomers have to learn.
+
+Similarly, the OpenSSL project used to use a mailing list for patches, but they also allowed
+pull requests on GitHub. They've since switched entirely to GitHub, it seems.
+
+For clippy we often fix up contributor pull requests before merging instead of asking them to make
+minor stylistic fixes, and simply noting that we did so. It's great to be able to make a perfect
+pull request, but there's no reason they need to learn to do that up front.
+
+In general it's always nice to make such bits of process optional or provide alternatives.
+As a contributor gets more involved, they'll be able to learn these things at a relaxed pace.
+
+♫
+So, you've got someone on your issue tracker wanting help fixing a bug. Of course
+you should answer their questions, but what else is involved in mentoring?
+
+¶ First, try to approach it as if you are their companion discovering the codebase along with them.
+For example, if you were to answer a question about the codebase, help them understand the process
+by which they could discover that answer themselves by walking through it. Instead of just giving
+them a code snippet, show them how some code elsewhere is doing a similar thing and how you can
+modify that code to be useful here too. Using "we" instead of "you" also helps. I've found that this
+attitude dispels a lot of the apprehension people have when approaching open source projects --
+you're more of a friend than a mentor.
+
+¶ Be clear in setting expectations. If you're too busy to be able to help them well, let them know!
+A lot of people are afraid of asking questions, and the lack of a response can signal that you think
+their question was too stupid to warrant a reply, which is a very discouraging sentiment that you
+don't want to inadvertently cause. Always respond, even if it is to say that you will be giving
+a full response later.
+
+¶ Mentoring doesn't have to be 1 on 1. It's nicer when all maintainers are helping out, popping in
+and out of an issue to help the folks working on them. This spreads out the work and the new
+contributor becomes comfortable with your community. Just be careful that nobody falls through the
+cracks in such a process.
+
+¶ Follow up! If a new contributor just landed a patch, point them to a similar but more
+involved bug as a next step. If you don't have one, remember to ping them the next time you see one.
+This makes them know you care, and keeps them engaged.
+
+♫
+It's important to understand where your contributors are coming from. One of the most
+common mistakes and sources of frustration is assuming that everyone thinks like you
+and shares your experiences.
+
+Open source mentorship is an opportunity to experience different ways of thinking, almost
+first-hand. It's an opportunity to become a better teacher, and of course improve
+someone else's programming skills in the process.
+
+All of this requires empathy.
+
+Be patient with your mentees. Avoid ¶expecting things from them; for example,
+sometimes they may not be familiar with the ¶ tools you use. In clippy we've
+had a couple of great contributions from people who were able to easily make the fix on their own,
+but had great trouble figuring out how Github worked.
+Other times they may not be familiar with the
+¶ programming language. In Servo we get a lot of folks new to Rust who want to learn Rust through
+open source. We still get really great contributions from these folks. Of course, sometimes
+you want to require familiarity with the language for an involved issue; but in that
+case you should make expectations clear in the bug itself.
+
+¶ For better or for worse, a project will usually have a primary language of communication.
+Not everyone will be fluent!
+
+Finally, ¶ use inclusive language! Avoid using phrases like "just do X". While the task may seem
+simple to you, there may be complexities that you have ignored because you're used to the task. It's
+very hard to put yourself completely in their shoes -- so don't assume you have. It's very discouraging
+when someone tells you to "just do X" and you find out that it's hard.
+
+♫
+I'd sort of like to tie this all together by pitching a dream I have. It's a dream I hope you adopt as your own.
+
+¶ All open source -- no, wait, that's a bit too ambitious, let's try again. The ¶ _Rust community_,
+
+(such dream much wow)
+
+---
+
+(to prep for next slide, because it is very nice and should not be spoiled in advance)
+
+As I said before, I really think that being welcoming in open source is just the right thing to do,
+though there are other valid reasons one may wish to do the same.
+
+I'm going to leave you all with a wonderful quote from Toni Morrison that helps motivate why I feel that way.
+
+♫
+
+(read quote)
+
