@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>"Open" as in "Welcoming": Facilitating Contributions</title>
+		<title>Oxidizing Firefox</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/sky.css">
@@ -46,16 +46,545 @@
 <section data-markdown data-separator-notes="^♫" data-separator="^§$" data-separator-vertical="^§§$">
 	<script type="text/template">
 ### Oxidizing Firefox
-
+	
 #### The journey of Rust and Stylo within Firefox
 
 <small> &mdash; Manish Goregaokar (@Manishearth)</small>
 
 ♫
+Hi! I'm Manish; I work on Servo at Mozilla.
+
+I'm here to talk about our journey integrating Rust code into Firefox.
+
+§
+### Firefox (Gecko)
+
+ - 9M lines of C++ code <!-- .element: class="fragment" -->
+ - Browsers take in code over the internet and do all kinds of stuff with it <!-- .element: class="fragment" -->
+ - Huge attack surface <!-- .element: class="fragment" -->
+
+
+♫
+
+So, Firefox.
+
+Like all mainstream browsers, Firefox's engine, Gecko, is written in C++. A lot of it.
+
+Browsers are something which take in arbitrary code over the Internet and do a lot of things with it. This means they have a huge attack surface.
+
+Browsers are no stranger to memory safety issues; and despite using a lot of best practices they continue to be plagued by them. Roughly half of the security issues in Firefox have been memory safety related.
 
 
 §
-### "Open"?
+
+<img src=img/rust-logo-blk.svg width="50%">
+
+♫
+
+This isn't a great situation. But this is why we have Rust!
+
+
+§
+<img src=img/rust-logo-blk.svg width="20%">
+
+
+ - Systems language <!-- .element: class="fragment" -->
+ - Memory safe <!-- .element: class="fragment" -->
+ - Avoids compromising on speed <!-- .element: class="fragment" -->
+ - Relatively easy to write multithreaded code <!-- .element: class="fragment" -->
+
+♫
+
+Rust was started within Mozilla as a safe systems language. As a ¶ systems language, it's suited for building things like browsers.
+
+It's ¶ memory safe, which means that it attempts to rule out the existence of memory safety bugs within the vast majority of your codebase.
+
+It does this ¶ without compromising on speed; which again makes it very suited for browsers.
+
+Finally, its memory safety protections help for ¶ thread safety as well. This makes it rather easy to write multithreaded code.
+
+We usually frame this as "Fearless Concurrency", because this makes it possible to aggressively
+write concurrent code and have the compiler help prevent the kind of mistakes that are easy to make
+when threads are involved.
+
+§
+### Servo
+
+ - ~400k (~1.5M with dependencies) lines of Rust code
+ - Highly parallel
+ - Experimental.
+
+♫
+
+Enter Servo. Servo is an experimental browser engine in Rust. It's significantly smaller than Gecko
+and doesn't yet do everything, but it serves well for experimentation.
+
+Servo is mostly in Rust which makes it relatively memory safe.
+
+But it makes heavy use of Rust's "fearless concurrency" as well! Browsers traditionally have been very single-threaded;
+each tab will have a single thread which does most of the work. Networking and certain rendering things can be off the main thread
+but overall browsers don't make use of the hardware we have for the computationally intensive stuff.
+
+Servo has parallel layout, parallel styling, and offloads almost all the rendering work to the GPU; which leads to major performance wins.
+
+§
+### Oxidation
+
+Let's actually bring this to Firefox!
+
+♫
+
+As Rust stabilized there was growing interest in bringing some of these wins into Firefox. Thus started the "oxidation" project; for getting Rust code into Firefox.
+
+§
+### Initial hurdles
+
+ - General immaturity
+ - Platform support
+ - Cargo very opinionated
+
+♫
+
+There were a lot of issues getting this to work initially. Rust was pretty immature at the time; it
+had only recently stabilized as a language. There were also platform support issues; e.g. debug info
+didn't work well on Windows; and there were thread issues on older versions.
+
+Cargo required the network to exist to work; which wasn't something we could have in our build system.
+
+§
+### Baby steps
+
+ - URL parser <!-- .element: class="fragment" -->
+ - MP4 metadata parser <!-- .element: class="fragment" -->
+
+♫
+
+Initially folks started this by experimentation. Someone taught Firefox to use Rust's ¶ URL parser as
+an experiment. This process brought out many of the deficiencies that Rust had at the time, and we
+got those fixed.
+
+A larger project started to use a Rust ¶ parser for a certain new format of metadata in MP4 headers. This was
+the first Rust code to end up in a Firefox release. The nice thing about this was that it could be turned off;
+if we didn't have Rust support on a platform we could just not parse that kind of MP4 file.
+This meant we could experiment and get real data but also not force all the Rust infrastructure pieces to be in place up front. It also
+let us do a gradual rollout in case things went wrong. They didn't.
+
+§
+### Stylo!
+
+ ~160K lines of C++ -> ~85k lines of Rust
+
+♫
+
+Now, these were relatively small projects, and mostly helped push Rust support in Firefox to the level we needed to work on larger things.
+
+And thus started Stylo. This was a project to take Servo's Rust style system and put it inside Gecko.
+
+The "style system" is our term for the component of the browser engine that parses the CSS, matches
+rules to elements, and goes through the "cascade", where we determine the most applicable rule and
+"compute" a style for the given element.
+
+It's a highly top-down process; you need to calculate the style of a parent element to calculate the
+styles of its children, but these styles can often then be calculated independently. This is _great_
+for parallelism; and we make use of this. While Servo's style system used to use a hand-rolled work-
+stealing algorithm, we now use the framework provided by rayon, a Rust library that makes it easy
+to do work-stealing parallelism.
+
+Integrating Stylo was a lot more challenging than the Rust projects that had happened before.
+
+§
+The Web is dark and full of terrors, and Servo doesn't yet
+implement all of them.
+
+♫
+For one, Servo's style system was incomplete. The Web is dark and full of terrors, and Servo doesn't yet
+implement all of them. A few months ago I wrote a three thousand word blog post about how complex
+the font-size CSS property is _alone_. A lot of stuff like this was missing in Servo. This meant there was a lot of work to fill in the gaps.
+
+
+
+§
+
+### September 2016
+<img src=img/stylo-obama.png width="80%">
+
+♫
+
+This is what Wikipedia looked like after around half a year of work by a small team.
+
+
+§
+### Today
+<img src=img/stylo-obama2.png width="80%">
+
+
+♫
+
+And it took us another year with a much bigger team to get all the CSS features in place.
+
+(Wikipedia started looking almost-correct much before we had everything implemented, but it was still a rather large period of time)
+
+
+§
+Frankenstein's browser
+♫
+
+Another problem was that browsers are rather monolithic. "Style system" isn't a standalone component; it's just an approximate set
+of functionality that we gave a name to. This means there was no clean API boundary, we had to pick a spot to tear the style system out, and
+try to sew it back onto the other browser.
+
+All the previous rust integrations had clean, hand-written bindings, with perhaps a couple dozen FFI functions declared. Stylo needed to understand everything about
+storing computed styles on the C++-side structs, and there would be a significant FFI back-and-forth between the style system and Gecko.
+
+This is nearly impossible to do by hand.
+
+§
+<img src=img/bindgen.png width="80%">
+
+♫
+
+Enter bindgen.
+
+Bindgen is a tool that when given a body of header files will generate Rust-side structs and FFI function bindings.
+
+This lets us not have to worry about keeping updated bindings. We can write to C++-side structs from Rust code almost
+seamlessly, and call functions defined by C/C++ as well.
+
+§
+
+```c
+/// in C
+bool Gecko_IsInDocument(RawGeckoNodeBorrowed node);
+```
+
+```
+/// in Rust
+extern "C" {
+ pub fn Gecko_IsInDocument (node: RawGeckoNodeBorrowed)
+     -> bool; 
+}
+```
+
+♫
+
+For example, it converts this C function declaration to this bit of Rust code
+
+§
+
+```cpp
+/// In C++
+struct nsStyleFont
+{
+
+  nsFont  mFont;
+  nscoord mSize;
+  float mFontSizeFactor;
+  nscoord mFontSizeOffset;
+  uint8_t mFontSizeKeyword;
+  uint8_t mGenericID;
+  // ...
+  RefPtr<nsAtom> mLanguage;
+};
+
+```
+
+♫
+
+And converts this C++ struct
+
+§
+
+```rust
+/// In Rust
+#[repr(C)]
+pub struct nsStyleFont {
+    pub mFont: nsFont,
+    pub mSize: nscoord,
+    pub mFontSizeFactor: f32,
+    pub mFontSizeOffset: nscoord,
+    pub mFontSizeKeyword: u8,
+    pub mGenericID: u8,
+    // ...
+    pub mLanguage: RefPtr<nsAtom>,
+}
+```
+
+♫
+
+To this Rust one.
+
+§
+
+ - `Gecko_` functions are defined in C++ and called from Rust
+ - `Servo_` functions are defined in Rust and called by C++
+
+♫
+
+We have some conventions to help. Whilst bindgen doesn't exactly help with generating C++-side declarations for Rust functions,
+what we do is that we declare the Servo_ functions in a C++ header file, and bindgen generates bindings for these; and then we
+have a unit test that ensures that the functions in the generated bindings have the same types as the actual Rust functions we've defined.
+
+§
+
+```rust
+#[no_mangle]
+pub extern "C" fn Servo_AnimationValues_IsInterpolable(from: RawServoAnimationValueBorrowed,
+                                                       to: RawServoAnimationValueBorrowed)
+                                                       -> bool {
+    let from_value = AnimationValue::as_arc(&from);
+    let to_value = AnimationValue::as_arc(&to);
+    from_value.animate(to_value, Procedure::Interpolate { progress: 0.5 }).is_ok()
+}
+```
+
+♫
+
+Here's one example of a Rust-side function that C++ calls, to see if it is possible to interpolate between two values.
+
+§
+
+### Safety
+
+ - FFI is inherently unsafe <!-- .element: class="fragment" -->
+ - Lots of FFI is bad <!-- .element: class="fragment" -->
+ - We need lots of FFI <!-- .element: class="fragment" -->
+ - Worth it? <!-- .element: class="fragment" -->
+
+♫
+
+So Rust has a concept of "unsafe". While normal Rust code is memory safe; Rust gives you the power to turn this off for regions of your code.
+
+This is useful for implementing low level datastructures (like a growable vector), and for calling FFI functions, where there's no guarantee that the other end will do something safe.
+
+Anyway, ¶ FFI is inherently unsafe. As a corollar, ¶ lots of FFI is bad.
+
+But ¶ we need lots of FFI, because we didn't have a clean API surface.
+
+¶ Is it worth it? The safety hazards in the FFI may outweigh the benefits of writing it in a safe language. Then we're back to square one.
+
+In our experience: It was worth it.
+
+We also had a bunch of tricks to make things safer.
+
+
+
+§
+
+<img src=img/nsstring.png width="80%">
+
+♫
+
+For example, Gecko uses a complicated set of custom string types. By default dealing with them from Rust involves a lot
+of unsafe pointer manipulation, but we implemented methods on it that did this so that one could use it safely from Rust.
+
+We did similar things for array types and many other gecko-side structs that needed to be manipulated often.
+
+
+
+§
+
+```c
+/// RawGeckoNodeBorrowed[OrNull] is `GeckoNode const*`
+RawGeckoNodeBorrowedOrNull
+	Gecko_GetLastChild(RawGeckoNodeBorrowed node);
+```
+
+```rust
+extern "C" {
+	fn Gecko_GetLastChild(node: &GeckoNode) -> Option<&GeckoNode>;
+}
+```
+
+♫
+
+We also told bindgen to to lots of type substitution. For example, we had typedefs tagged as "borrowed" and "borrowed or null". On the C++ side they were
+simply pointers, but on the Rust side bindgen would replace `FooBorrowed` with a borrowed pointer to `Foo` and `FooBorrowedOrNull` with `Option<&Foo>`. `Option<&T>` is represented
+as a single word where the `None` variant is represented by null. This reduced the number of things we had to worry about at the FFI layer. There are many invariants to
+uphold, but at least null and dangling pointers will not be problems.
+
+
+Generally, we customize bindgen a _lot_, we were giving it so many configuration options that we
+eventually created a 600-line toml file for storing the higher-level configuration in a structured
+format. Bindgen is highly configurable in what it can produce and this is a very powerful tool to have.
+
+Bindgen can also cope a lot with C++ stuff, including generating bindings for methods and many
+things. We didn't make as much use of this as we could have (due to various reasons that are mostly
+no longer valid).
+
+
+§
+### Thread safety
+
+ - Stylo is very parallel
+ - Gecko is designed around there being one main thread for a content process
+ - Every time we call into gecko there's a danger of this breaking down
+
+
+♫
+
+Rust makes it easy to avoid threadsafety issues in Rust code. But we can't extend that to the C++ code we call. Gecko wasn't designed with parallelism in mind, so many of the function calls we do
+assume that they're being called from the "main" thread and do various things with globals.
+
+For a while we'd stumble across one of these every few weeks, and it would take a nontrivial amount
+of time to fix. For me this was in fact the best argument for using Rust for Stylo; if our
+occasional Rust-to-C++ calls have so much trouble with thread safety it would have been much much
+worse for a pure C++ project to make it parallel. (In fact, there have been not one but two unsuccessful
+projects in the past for writing a parallel style system in C++)
+
+We eventually designed a fix, however.
+
+§
+### Static analysis
+
+ - GCC plugin
+ - Detect writes to the heap stemming from `Gecko_` functions
+ - System of whitelists helps with "allowed" writes
+
+♫
+
+We designed a static analysis that would prevent heap writes from `Gecko_` functions.
+Either a `Gecko_` function would assert that it was on the main thread, or its
+callgraph would be enforced to write only to non-heap variables. We could whitelist
+pointer arguments to these functions as "local", as well as whitelist certain library
+calls as safe.
+
+This significantly improved the situation of thread safety.
+
+§
+### Infra hurdles
+
+ - Vendoring crates
+ - Build time bindgen
+ - Dual monorepo
+
+♫
+
+Aside from the code-side challenges, we also had some infrastructure level challenges. As mentioned before,
+Cargo hits the network to fetch crates, which we can't allow in our testing environment. We worked on getting
+vendoring support into cargo, so that now it's easy to check in all your dependencies into the tree and work with them.
+
+We also used to check in bindings and manually regenerate them. This was fine during development, but it was unacceptable
+for anything that is being released. All the safety of Stylo will be worthless if someone forgets to accompany
+a relevant header file change with a bindings regen, leading to mismatched layouts and lots of unsafety. Also,
+this meant we couldn't generate platform-dependent bindings (e.g. bindings to statics) or work on 32 bit at all.
+
+Bindgen uses libclang, and getting that working well in automation was tricky, but we did it and switched over to generating
+bindings at build time.
+
+Finally, both Gecko and Servo are their own repositories. Gecko follows a monorepo format, and Servo is a multirepo with
+a very large "core browser" repo at the top. While a large fraction of our code is not in the core browser repo, the style system was.
+
+We wanted to continue to be able to hack on servo on its own, but we also wanted to be able to coordinate landing of patches
+that apply to both codebases. The solution was to vendor servo inside Gecko, but keep it a separate repo as well, with commits from
+Servo being mirrored in. There's a lot of scope for improvement here with more automation.
+
+
+§
+The benefits
+
+♫
+So I've gone on for a while about all the challenges we had and how we tackled them.
+
+But it was completely worth it!
+
+§
+### Benefit: Speed
+
+<img src=img/amazon.png width="80%">
+
+♫
+
+One benefit was that Firefox did get noticeably faster. This graph (note the truncated y-axis) shows a 25%
+speedup in the time it takes to load Amazon's homepage. While I don't have numbers for this, many noticed that sites like
+Twitter and Google Maps were much more responsive with Stylo enabled.
+
+Parallelism is pretty great!
+
+§
+### Benefit: Safety
+
+ - Despite all the churn, not much in the world of memory safety bugs
+ - Intensive fuzzing mostly caught panics (assertions)
+ - Much easier to do refactorings safely
+
+♫
+
+The new codebase is much safer, too. We haven't had that many safety issues, and the ones we have had have been on the C++ side due to refactorings we had to do to accomodate stylo.
+
+We fuzzed the new code a _lot_, and unlike the usual output of fuzzing, we mostly found regular Rust panics; i.e. assertions. These would
+cause the process to exit on a release build, but would not be exploitable unlike memory safety bugs.
+
+I personally found it much easier to refactor the Rust code. I recall once when there was an
+involved C++ side refactoring that I had to do, and my initial estimate was 3 days. I was extremely
+wrong. This wasn't because I didn't know C++; I've been writing C++ far longer than Rust; it was
+because I was in a Rust mindset and it would probably have taken me that long if it was in pure
+Rust. I had to work very carefully to structure my changes such that the chances for breaking
+pointery things was low in each step. Planning this itself took time. Doing each step also took
+quite a while. Segfaults still happened each step, and debugging them was a pain. It ultimately took me three weeks
+to get it done, far from my estimate of three days. On the other hand the Rust side of the refactor which
+involved a lot of the same kinds of changes was done quickly because I just had to make some changes and fix up
+all the compiler errors one by one.
+
+§
+### Benefit: Cleaner code
+
+ - Stronger types and abstractions
+ - `#[derive()]`
+
+♫
+
+Not just from the point of view of safety, but in general I found the new code much cleaner.
+Admitteldly, some of this may have been possible to achieve by just a targeted rewrite in C++. For example, Rust traits were
+quite useful for keeping the code compartmentalized and understandable. Rust enums are really good
+for representing CSS. Overall, it was much more pleasant to work with.
+
+Rust custom derives deserve a mention here; too. While Gecko uses a pile of C macros and mostly hand-written parsing/computation/animation
+code, we were able to make all that unnecessary using Rust's custom derive functionality, which let us do
+a lot of codegen at compile time.
+
+§
+### General tips for integrating Rust
+
+ - Try to keep a manageable API surface <!-- .element: class="fragment" -->
+ - Reach for `bindgen` when the API surface gets large enough <!-- .element: class="fragment" -->
+ - Choose stuff where Rust will benefit you <!-- .element: class="fragment" -->
+
+♫
+
+A lot of the challeges I mentioned are rather specific to Stylo. In general, if you want to integrate Rust into an existing codebase,
+
+¶ try to keep a manageable API surface. For stylo it was inevitable that we would have no clean API; but in most cases you can choose something that
+will get you a manageable API. Keep the bindings in mind when deciding the scope of the integration.
+
+¶ You should also reach for bindgen the minute the bindings get large. As I've mentioned bindgen has
+a lot of features and knobs, explore them and try to exploit them to your advantage. If bindgen
+doesn't handle some C++ stuff you need; file an issue, the maintainers are pretty responsive.
+
+¶ Finally, try to choose stuff where Rust will benefit you. There is always a safety cost of the FFI you have to do; make sure the benefits of Rust outweigh the safety cost of the FFI.
+
+§
+### Where Rust shines
+
+ - Optimizing hot codepaths in Python/Ruby/etc programs <!-- .element: class="fragment" -->
+ - Parallelizing stuff <!-- .element: class="fragment" -->
+ - When memory safety is a problem <!-- .element: class="fragment" -->
+ - If you just find Rust easier to work with! <!-- .element: class="fragment" -->
+
+
+♫
+
+As a Rust programmer I'd like to urge folks to just write _everything_ in Rust, but I suspect not everyone is as enthusiastic as I am :)
+
+¶ Rust is really good for optimizing perf-critical codepaths in programs in interpreted languages. This was somewhat unexpected for us, but one of the major
+uses of Rust in production is for stuff like this. We've gotten consistent feedback from these companies that folks who are new to systems programming find Rust a very good way to learn.
+
+¶ As I've mentioned it's also good for writing code that makes use of parallelism.
+
+¶ This goes without saying, but if your native codebase needs protection against memory safety bugs, Rust is great.
+
+¶ Opinions differ on whether Rust is easier to use than C++ or other languages, but if your team
+finds it so; go for it! Rust is generally applicable to a rather wide set of use cases, and more
+or less all the cases where you can also use C++.
 
 
 §
